@@ -1,0 +1,18 @@
+{
+  "env" : {
+    "node": true,
+    "mocha": true
+  },
+  "rules" : {
+    "curly": [1, "multi-line"],
+    "quotes": [1, "single", "avoid-escape"],
+    "no-use-before-define": [1, "nofunc"],
+    "no-multi-spaces": 1,
+    "consistent-return": 0,
+    "no-trailing-spaces": 1,
+    "no-unused-vars": 1,
+    "no-trailing-spaces": 1,
+    "eol-last": 1,
+    "no-process-exit": 0
+  }
+}

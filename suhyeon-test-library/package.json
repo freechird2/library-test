@@ -1,0 +1,50 @@
+{
+    "name": "suhyeon-test-library",
+    "version": "1.0.0",
+    "scripts": {
+        "build": "rollup -c",
+        "watch": "rollup -cw",
+        "prebuild": "rm -rf dist"
+    },
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "main": "./dist/index.js",
+    "module": "./dist/esm/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "require": "./dist/index.js",
+            "import": "./dist/esm/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "devDependencies": {
+        "@babel/core": "^7.26.0",
+        "@babel/preset-env": "^7.26.0",
+        "@babel/preset-react": "^7.26.3",
+        "@babel/preset-typescript": "^7.26.0",
+        "@rollup/plugin-babel": "^6.0.4",
+        "@rollup/plugin-node-resolve": "^15.3.0",
+        "@rollup/plugin-typescript": "^12.1.1",
+        "@types/react": "^18.3.13",
+        "@types/react-dom": "^18.3.1",
+        "autoprefixer": "^10.4.20",
+        "dts": "^0.1.1",
+        "from": "^0.1.7",
+        "import": "^0.0.6",
+        "postcss": "^8.4.49",
+        "postcss-import": "^16.1.0",
+        "rollup": "^4.28.0",
+        "rollup-plugin-dts": "^6.1.1",
+        "rollup-plugin-peer-deps-external": "^2.2.4",
+        "rollup-plugin-postcss": "^4.0.2",
+        "sass": "^1.82.0",
+        "tslib": "^2.8.1",
+        "typescript": "^5.7.2"
+    },
+    "peerDependencies": {
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0"
+    }
+}
