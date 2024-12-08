@@ -1,6 +1,5 @@
-import { ReactNode } from 'react';
-interface ScrollMeterProps {
-    children: ReactNode;
+interface ScrollmeterProps {
+    children: React.ReactNode;
 }
-declare const ScrollMeter: ({ children }: ScrollMeterProps) => import("react/jsx-runtime").JSX.Element;
-export default ScrollMeter;
+declare const Scrollmeter: ({ children }: ScrollmeterProps) => import("react/jsx-runtime").JSX.Element;
+export default Scrollmeter;

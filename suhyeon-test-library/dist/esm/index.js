@@ -1,73 +1,87 @@
-import { jsxs, Fragment, jsx } from 'react/jsx-runtime';
-import { useState, useRef, useEffect } from 'react';
+import { jsx, jsxs } from 'react/jsx-runtime';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import styled from 'styled-components';
 
-function styleInject(css, ref) {
-  if (ref === void 0) ref = {};
-  var insertAt = ref.insertAt;
-  if (typeof document === 'undefined') {
-    return;
-  }
-  var head = document.head || document.getElementsByTagName('head')[0];
-  var style = document.createElement('style');
-  style.type = 'text/css';
-  if (insertAt === 'top') {
-    if (head.firstChild) {
-      head.insertBefore(style, head.firstChild);
-    } else {
-      head.appendChild(style);
-    }
-  } else {
-    head.appendChild(style);
-  }
-  if (style.styleSheet) {
-    style.styleSheet.cssText = css;
-  } else {
-    style.appendChild(document.createTextNode(css));
-  }
-}
-
-var css_248z = ".Scrollmeter-module_scrollmeter__Y8vbC {\n  position: fixed;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 4px;\n  background-color: #f0f0f0;\n  z-index: 1000;\n}\n.Scrollmeter-module_scrollmeter__progress__3lnD6 {\n  height: 100%;\n  background-color: #007bff;\n  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);\n}";
-var styles = {"scrollmeter":"Scrollmeter-module_scrollmeter__Y8vbC","scrollmeter__progress":"Scrollmeter-module_scrollmeter__progress__3lnD6"};
-styleInject(css_248z);
-
-const ScrollMeter = ({ children }) => {
-    const [scrollProgress, setScrollProgress] = useState(0);
-    const contentRef = useRef(null);
-    const [contentHeight, setContentHeight] = useState(0);
-    useEffect(() => {
-        const updateScrollProgress = () => {
-            if (!contentRef.current)
-                return;
-            const totalHeight = contentHeight - window.innerHeight;
-            const currentScroll = window.scrollY;
-            const scrollPercentage = (currentScroll / totalHeight) * 100;
-            setScrollProgress(Math.min(100, Math.max(0, scrollPercentage)));
-        };
-        window.addEventListener('scroll', updateScrollProgress);
-        return () => {
-            window.removeEventListener('scroll', updateScrollProgress);
-        };
-    }, [contentHeight]);
-    useEffect(() => {
-        console.log('한번만');
-        // ResizeObserver를 사용하여 컨텐츠 높이 변화 감지
-        const resizeObserver = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-                setContentHeight(entry.contentRect.height);
-            }
-        });
-        const currentContent = contentRef.current;
-        if (currentContent) {
-            resizeObserver.observe(currentContent);
-        }
-        return () => {
-            if (currentContent) {
-                resizeObserver.unobserve(currentContent);
-            }
-        };
-    }, []);
-    return (jsxs(Fragment, { children: [jsx("div", { className: styles.scrollmeter, children: jsx("div", { className: styles.scrollmeter__progress, style: { width: `${scrollProgress}%` } }) }), jsx("div", { ref: contentRef, children: children })] }));
+const ScrollmeterWrapper = styled.div.attrs(({ $top }) => ({
+    style: {
+        top: `${$top || 0}px`,
+    },
+})) `
+    position: fixed;
+    left: 0;
+    width: 100%;
+    height: 10px;
+    background-color: transparent;
+    z-index: ${({ $zIndex }) => $zIndex || 0};
+`;
+const ScrollmeterBar$1 = styled.div.attrs(({ $width }) => ({
+    style: {
+        width: `${$width || 0}%`,
+    },
+})) `
+    background-color: yellow;
+    height: 100%;
+    transition: width 0.3s ease-out;
+`;
+const UI = {
+    ScrollmeterWrapper,
+    ScrollmeterBar: ScrollmeterBar$1,
 };
 
-export { ScrollMeter as default };
+const ScrollmeterBar = ({ containerRef }) => {
+    const [containerTop, setContainerTop] = useState(0);
+    const [containerHeight, setContainerHeight] = useState(0);
+    const [barWidth, setBarWidth] = useState(0);
+    const [zIndex, setZIndex] = useState(0);
+    const findHighestZIndex = useCallback((element) => {
+        let highest = 0;
+        // 현재 요소의 z-index 확인
+        const zIndex = window.getComputedStyle(element).zIndex;
+        if (zIndex !== 'auto') {
+            highest = Math.max(highest, parseInt(zIndex));
+        }
+        // 모든 자식 요소들을 순회
+        Array.from(element.children).forEach((child) => {
+            highest = Math.max(highest, findHighestZIndex(child));
+        });
+        return highest + 1;
+    }, [containerRef]);
+    useEffect(() => {
+        if (!containerHeight)
+            return;
+        const updateBarWidth = () => {
+            if (!containerRef.current)
+                return;
+            const marginTop = parseInt(window.getComputedStyle(containerRef.current).marginTop);
+            const marginBottom = parseInt(window.getComputedStyle(containerRef.current).marginBottom);
+            const elementTop = window.scrollY + containerRef.current.getBoundingClientRect().top;
+            const totalHeight = containerRef.current.clientHeight + marginTop + marginBottom - document.documentElement.clientHeight;
+            const currentScroll = window.scrollY - elementTop;
+            const scrollPercentage = (currentScroll / totalHeight) * 100;
+            setContainerTop(containerRef.current.getBoundingClientRect().top);
+            setBarWidth(Math.min(100, Math.max(0, scrollPercentage)));
+        };
+        window.addEventListener('scroll', updateBarWidth);
+        return () => window.removeEventListener('scroll', updateBarWidth);
+    }, [containerHeight]);
+    useEffect(() => {
+        if (!containerRef.current)
+            return;
+        const highestZIndex = findHighestZIndex(containerRef.current);
+        setZIndex(highestZIndex);
+        const resizeObserver = new ResizeObserver((entries) => {
+            setContainerHeight(entries[0].contentRect.height);
+        });
+        resizeObserver.observe(containerRef.current);
+        return () => resizeObserver.disconnect();
+    }, [containerRef]);
+    return (jsx(UI.ScrollmeterWrapper, { "$top": containerTop < 0 ? 0 : containerTop, "$zIndex": zIndex, children: jsx(UI.ScrollmeterBar, { "$width": barWidth }) }));
+};
+
+const Scrollmeter = ({ children }) => {
+    const containerRef = useRef(null);
+    return (jsxs("div", { style: { position: 'relative' }, children: [jsx(ScrollmeterBar, { containerRef: containerRef }), jsx("div", { ref: containerRef, children: children })] }));
+};
+
+export { Scrollmeter as default };
 //# sourceMappingURL=index.js.map
