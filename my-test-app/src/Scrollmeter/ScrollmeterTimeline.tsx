@@ -8,8 +8,8 @@ const ScrollmeterTimeline = ({ containerHeight, h1Refs }: ScrollmeterTimelinePro
         <>
             {h1Refs.map((h1, idx) => {
                 const h1Top = h1.offsetTop
-                const relativePosition = (h1Top / containerHeight) * 100
-                console.log(h1Top, relativePosition)
+                const relativePosition = (h1Top / (containerHeight - document.documentElement.clientHeight)) * 100
+                console.log(h1Top, relativePosition, document.documentElement.clientHeight)
 
                 return (
                     <div
