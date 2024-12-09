@@ -1,35 +1,15 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { UI } from './Scrollmeter.styled'
 
 interface ScrollmeterBarProps {
     containerRef: React.RefObject<HTMLDivElement>
+    highestZIndex: number
 }
 
-const ScrollmeterBar = ({ containerRef }: ScrollmeterBarProps) => {
+const ScrollmeterBar = ({ containerRef, highestZIndex }: ScrollmeterBarProps) => {
     const [containerTop, setContainerTop] = useState<number>(0)
     const [containerHeight, setContainerHeight] = useState<number>(0)
     const [barWidth, setBarWidth] = useState<number>(0)
-    const [zIndex, setZIndex] = useState<number>(0)
-
-    const findHighestZIndex = useCallback(
-        (element: HTMLElement): number => {
-            let highest = 0
-
-            // 현재 요소의 z-index 확인
-            const zIndex = window.getComputedStyle(element).zIndex
-            if (zIndex !== 'auto') {
-                highest = Math.max(highest, parseInt(zIndex))
-            }
-
-            // 모든 자식 요소들을 순회
-            Array.from(element.children).forEach((child) => {
-                highest = Math.max(highest, findHighestZIndex(child as HTMLElement))
-            })
-
-            return highest + 1
-        },
-        [containerRef]
-    )
 
     useEffect(() => {
         if (!containerHeight) return
@@ -57,9 +37,6 @@ const ScrollmeterBar = ({ containerRef }: ScrollmeterBarProps) => {
     useEffect(() => {
         if (!containerRef.current) return
 
-        const highestZIndex = findHighestZIndex(containerRef.current)
-        setZIndex(highestZIndex)
-
         const resizeObserver = new ResizeObserver((entries) => {
             setContainerHeight(entries[0].contentRect.height)
         })
@@ -71,7 +48,7 @@ const ScrollmeterBar = ({ containerRef }: ScrollmeterBarProps) => {
     return (
         <UI.ScrollmeterWrapper
             $top={containerTop < 0 ? 0 : containerTop}
-            $zIndex={zIndex}>
+            $zIndex={highestZIndex}>
             <UI.ScrollmeterBar $width={barWidth} />
         </UI.ScrollmeterWrapper>
     )
