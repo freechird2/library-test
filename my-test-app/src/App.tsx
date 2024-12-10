@@ -1,4 +1,5 @@
-import Scrollmeter from './Scrollmeter/Scrollmeter'
+import { useEffect, useState } from 'react'
+import { createScrollmeter } from './lib'
 
 function App() {
     // const updateScrollProgress = () => {
@@ -22,27 +23,35 @@ function App() {
     //     }
     // }, [])
 
+    const [test, setTest] = useState(false)
+
+    useEffect(() => {
+        createScrollmeter({
+            targetId: 'scrollmeter-container',
+        })
+    }, [])
+
     return (
-        <div>
-            <Scrollmeter>
-                <div style={{ backgroundColor: 'blue', height: '300px' }}></div>
-                <h1 style={{ margin: 0, backgroundColor: 'red' }}>
-                    라이브러리 테스트라이브러리 테스트라이브러리 테스트라이브러리 테스트라이브러리 테스트
-                </h1>
-                <div style={{ marginTop: '100px', height: '1000px', zIndex: 100 }}>
-                    <h1>안녕하세요</h1>
-                    <button style={{ position: 'relative', zIndex: 400 }}>버튼</button>
-                </div>
-                <div style={{ marginTop: '100px', height: '1000px' }}>
-                    <h1>안녕하세요</h1>
-                    <button>버튼</button>
-                </div>
-                <div style={{ marginTop: '100px' }}>
-                    <h1>안녕하세요</h1>
-                    <button>버튼</button>
-                </div>
-                <div style={{ backgroundColor: 'blue', height: '400px' }}></div>
-            </Scrollmeter>
+        <div id='scrollmeter-container'>
+            {/* <Scrollmeter> */}
+            <div style={{ backgroundColor: 'blue', height: '300px' }}></div>
+            <h1 style={{ margin: 0, backgroundColor: 'red' }}>
+                라이브러리 테스트라이브러리 테스트라이브러리 테스트라이브러리 테스트라이브러리 테스트
+            </h1>
+            <div style={{ display: test ? 'block' : 'none', marginTop: '100px', height: '1000px', zIndex: 100 }}>
+                <h1>안녕하세요</h1>
+                <button style={{ position: 'relative', zIndex: 400 }}>버튼</button>
+            </div>
+            <div style={{ marginTop: '100px', height: '1000px' }}>
+                <h1>안녕하세요</h1>
+                <button onClick={() => setTest(!test)}>버튼</button>
+            </div>
+            <div style={{ marginTop: '100px' }}>
+                <h1>안녕하세요</h1>
+                <button>버튼</button>
+            </div>
+            <div style={{ backgroundColor: 'blue', height: '400px' }}></div>
+            {/* </Scrollmeter> */}
         </div>
     )
 }

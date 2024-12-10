@@ -1,0 +1,14 @@
+.scrollmeter_container {
+    position: fixed;
+    width: 100%;
+    left: 0;
+    top: 0;
+    background-color: transparent;
+
+    .scrollmeter_bar {
+        width: 0;
+        height: 10px;
+        background-color: rgba(74, 144, 226, 0.9);
+        transition: width 0.2s ease-out;
+    }
+}
