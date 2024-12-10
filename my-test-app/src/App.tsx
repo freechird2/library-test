@@ -37,7 +37,7 @@ function App() {
                     <h1>안녕하세요</h1>
                     <button>버튼</button>
                 </div>
-                <div style={{ marginTop: '100px', width: '100dvw' }}>
+                <div style={{ marginTop: '100px' }}>
                     <h1>안녕하세요</h1>
                     <button>버튼</button>
                 </div>

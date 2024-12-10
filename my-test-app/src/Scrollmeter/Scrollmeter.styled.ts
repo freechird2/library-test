@@ -1,5 +1,10 @@
 import styled, { css } from 'styled-components'
 
+const ScrollmeterContainer = styled.div`
+    position: relative;
+    width: 100%;
+`
+
 const ScrollmeterWrapper = styled.div.attrs<{ $top: number; $zIndex: number }>(({ $top }) => ({
     style: {
         top: `${$top || 0}px`,
@@ -11,6 +16,7 @@ const ScrollmeterWrapper = styled.div.attrs<{ $top: number; $zIndex: number }>((
     height: 10px;
     background-color: transparent;
     z-index: ${({ $zIndex }) => $zIndex || 0};
+    cursor: grab;
 `
 
 const ScrollmeterBar = styled.div.attrs<{ $width: number }>(({ $width }) => ({
@@ -93,7 +99,7 @@ const ScrollmeterTooltip = styled.div<{ $direction: 'left' | 'right' | 'center' 
 const ScrollmeterTimeline = styled.div<{ $relativePosition: number; $highestZIndex: number; $width: number }>`
     position: fixed;
     top: 0;
-    left: ${({ $relativePosition }) => ($relativePosition > 99 ? 'calc(100% - 24px)' : `${$relativePosition}%`)};
+    left: ${({ $relativePosition }) => ($relativePosition > 99 ? 'calc(100% - 4px)' : `${$relativePosition}%`)};
     height: 10px;
     width: ${({ $width }) => $width}px;
     background-color: #2c3e50;
@@ -112,4 +118,5 @@ export const UI = {
     ScrollmeterBar,
     ScrollmeterTimeline,
     ScrollmeterTooltip,
+    ScrollmeterContainer,
 }

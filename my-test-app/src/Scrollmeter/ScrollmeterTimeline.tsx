@@ -1,4 +1,3 @@
-import { useCallback } from 'react'
 import { UI } from './Scrollmeter.styled'
 
 interface ScrollmeterTimelineProps {
@@ -9,9 +8,9 @@ interface ScrollmeterTimelineProps {
 }
 
 const ScrollmeterTimeline = ({ containerHeight, h1Refs, highestZIndex, width = 4 }: ScrollmeterTimelineProps) => {
-    const moveToElement = useCallback((element: HTMLHeadingElement) => {
-        element.scrollIntoView({ behavior: 'smooth' })
-    }, [])
+    // const moveToElement = useCallback((element: HTMLHeadingElement) => {
+    //     element.scrollIntoView({ behavior: 'smooth' })
+    // }, [])
 
     return (
         <>
@@ -25,7 +24,8 @@ const ScrollmeterTimeline = ({ containerHeight, h1Refs, highestZIndex, width = 4
                         $relativePosition={relativePosition}
                         $highestZIndex={highestZIndex + 1}
                         $width={width}
-                        onClick={() => moveToElement(h1)}>
+                        // onClick={() => moveToElement(h1)}
+                    >
                         <UI.ScrollmeterTooltip $direction={relativePosition < 7.6 ? 'left' : relativePosition > 92.4 ? 'right' : 'center'}>
                             <p>{h1.textContent}</p>
                         </UI.ScrollmeterTooltip>

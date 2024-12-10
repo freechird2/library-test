@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import ScrollmeterBar from './ScrollmeterBar'
 import ScrollmeterTimeline from './ScrollmeterTimeline'
+import { UI } from './Scrollmeter.styled'
 
 interface ScrollmeterProps {
     children: React.ReactNode
@@ -47,7 +48,7 @@ const Scrollmeter = ({ children }: ScrollmeterProps) => {
     }, [containerRef])
 
     return (
-        <div style={{ position: 'relative' }}>
+        <UI.ScrollmeterContainer>
             <ScrollmeterBar
                 containerRef={containerRef}
                 highestZIndex={highestZIndex}
@@ -60,7 +61,7 @@ const Scrollmeter = ({ children }: ScrollmeterProps) => {
                 />
             )}
             <div ref={containerRef}>{children}</div>
-        </div>
+        </UI.ScrollmeterContainer>
     )
 }
 
