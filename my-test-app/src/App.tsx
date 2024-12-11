@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { createScrollmeter } from './lib'
+import { createScrollmeter } from './js-scrollmeter/lib'
 
 function App() {
     // const updateScrollProgress = () => {
@@ -30,15 +30,24 @@ function App() {
             targetId: 'scrollmeter-container',
             useTimeline: true,
             useTooltip: true,
-            barOptions: {
-                color: 'red',
-                background: 'blue',
-                height: 20,
-            },
-            timelineOptions: {
-                color: 'green',
-                width: 10,
-            },
+            usePreview: true,
+            // barOptions: {
+            //     color: 'rgba(74, 144, 226, 0.9)',
+            //     background: 'transparent',
+            //     height: 8,
+            // },
+            // timelineOptions: {
+            //     color: 'green',
+            //     width: 4,
+            // },
+            // tooltipOptions: {
+            //     background: 'blue',
+            //     fontColor: 'red',
+            //     fontSize: 15,
+            //     paddingBlock: 8,
+            //     paddingInline: 2,
+            //     width: 200,
+            // },
         })
     }, [])
 
