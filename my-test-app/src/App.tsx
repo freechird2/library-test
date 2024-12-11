@@ -28,6 +28,17 @@ function App() {
     useEffect(() => {
         createScrollmeter({
             targetId: 'scrollmeter-container',
+            useTimeline: true,
+            useTooltip: true,
+            barOptions: {
+                color: 'red',
+                background: 'blue',
+                height: 20,
+            },
+            timelineOptions: {
+                color: 'green',
+                width: 10,
+            },
         })
     }, [])
 

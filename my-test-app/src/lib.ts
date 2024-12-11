@@ -1,8 +1,4 @@
-import { Scrollmeter } from './scrollmeter'
-
-export interface ScrollmeterOptions {
-    targetId: string
-}
+import { Scrollmeter, ScrollmeterOptions } from './scrollmeter'
 
 export const createScrollmeter = (options: ScrollmeterOptions) => {
     const scrollmeter = new Scrollmeter(options)
