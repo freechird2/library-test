@@ -4,252 +4,217 @@ import styles from './scrollmeter.module.scss'
 import { IScrollmeter, ScrollmeterOptions } from './scrollmeter.types'
 
 export class Scrollmeter extends IScrollmeter {
-  #defaultOptions: ScrollmeterOptions
-  #targetContainer: HTMLElement | null
-  #scrollmeterContainer: HTMLDivElement | null
-  #scrollmeterBar: HTMLDivElement | null
-  #resizeObserver: ResizeObserver | null
+    #defaultOptions: ScrollmeterOptions
+    #targetContainer: HTMLElement | null
+    #scrollmeterContainer: HTMLDivElement | null
+    #scrollmeterBar: HTMLDivElement | null
+    #resizeObserver: ResizeObserver | null
 
-  #timelineElements: HTMLElement[]
+    #timelineElements: HTMLElement[]
 
-  #captureCanvas: HTMLCanvasElement | null
+    #captureCanvas: HTMLCanvasElement | null
 
-  #containerHeight: number
-  #barWidth: number
-  #totalHeight: number
-  #elementTop: number
-  #highestZIndex: number
+    #containerHeight: number
+    #barWidth: number
+    #totalHeight: number
+    #elementTop: number
+    #highestZIndex: number
 
-  constructor(options: ScrollmeterOptions) {
-    super()
-    const { targetId } = options
-    this.#defaultOptions = options
+    constructor(options: ScrollmeterOptions) {
+        super()
+        const { targetId } = options
+        this.#defaultOptions = options
 
-    this.#targetContainer = document.getElementById(targetId) ?? null
-    this.#scrollmeterContainer = null
-    this.#scrollmeterBar = null
-    this.#resizeObserver = null
-    this.#captureCanvas = null
+        this.#targetContainer = document.getElementById(targetId) ?? null
+        this.#scrollmeterContainer = null
+        this.#scrollmeterBar = null
+        this.#resizeObserver = null
+        this.#captureCanvas = null
 
-    this.#timelineElements = []
+        this.#timelineElements = []
 
-    // 숫자 필드 초기화
-    this.#containerHeight = 0
-    this.#barWidth = 0
-    this.#totalHeight = 0
-    this.#elementTop = 0
-    this.#highestZIndex = 0
+        // 숫자 필드 초기화
+        this.#containerHeight = 0
+        this.#barWidth = 0
+        this.#totalHeight = 0
+        this.#elementTop = 0
+        this.#highestZIndex = 0
 
-    this.#initResizeObserver()
-  }
-
-  #initResizeObserver = () => {
-    if (!this.#targetContainer) {
-      throw new Error('targetContainer is not found')
+        this.#initResizeObserver()
     }
 
-    this.#resizeObserver = new ResizeObserver(async (entries) => {
-      if (!this.#targetContainer) return
-
-      if (
-        !this.#scrollmeterContainer ||
-        this.#containerHeight === entries[0].contentRect.height
-      )
-        return
-
-      this.#containerHeight = entries[0].contentRect.height
-
-      const marginTop = parseInt(
-        window.getComputedStyle(this.#targetContainer).marginTop,
-      )
-      const marginBottom = parseInt(
-        window.getComputedStyle(this.#targetContainer).marginBottom,
-      )
-      this.#elementTop =
-        window.scrollY + this.#targetContainer.getBoundingClientRect().top
-      this.#totalHeight =
-        this.#targetContainer.clientHeight +
-        marginTop +
-        marginBottom -
-        document.documentElement.clientHeight
-
-      this.#updateBarWidth()
-
-      if (this.#defaultOptions.useTimeline) {
-        document
-          .querySelectorAll(`.${styles.scrollmeter_timeline}`)
-          .forEach((element) => {
-            element.remove()
-          })
-
-        if (this.#defaultOptions.usePreview) {
-          await this.#captureContainer()
+    #initResizeObserver = () => {
+        if (!this.#targetContainer) {
+            throw new Error('targetContainer is not found')
         }
 
-        const timeline = new ScrollmeterTimeline(this)
+        this.#resizeObserver = new ResizeObserver(async (entries) => {
+            if (!this.#targetContainer) return
 
-        this.#timelineElements = timeline.createTimeline(
-          this.#containerHeight,
-          this.#highestZIndex,
-        )
-      }
-    })
-  }
+            if (!this.#scrollmeterContainer || this.#containerHeight === entries[0].contentRect.height) return
 
-  #createScrollmeterContainer = () => {
-    try {
-      if (!this.#targetContainer)
-        throw new Error('targetContainer is not found')
+            this.#containerHeight = entries[0].contentRect.height
 
-      const scrollmeterContainer = document.createElement(
-        'div',
-      ) as HTMLDivElement
-      scrollmeterContainer.classList.add(styles.scrollmeter_container)
+            const marginTop = parseInt(window.getComputedStyle(this.#targetContainer).marginTop)
+            const marginBottom = parseInt(window.getComputedStyle(this.#targetContainer).marginBottom)
+            this.#elementTop = window.scrollY + this.#targetContainer.getBoundingClientRect().top
+            this.#totalHeight = this.#targetContainer.clientHeight + marginTop + marginBottom - document.documentElement.clientHeight
 
-      const highestZIndex = this.#findHighestZIndex(this.#targetContainer)
-      this.#highestZIndex = highestZIndex
-      scrollmeterContainer.style.zIndex = highestZIndex.toString()
+            this.#updateBarWidth()
 
-      const scrollmeterBar = this.#createScrollmeterBar()
-      scrollmeterContainer.appendChild(scrollmeterBar)
+            if (this.#defaultOptions.useTimeline) {
+                document.querySelectorAll(`.${styles.scrollmeter_timeline}`).forEach((element) => {
+                    element.remove()
+                })
 
-      this.#scrollmeterContainer = scrollmeterContainer
+                if (this.#defaultOptions.usePreview) {
+                    await this.#captureContainer()
+                }
 
-      this.setCSSCustomProperties()
+                const timeline = new ScrollmeterTimeline(this)
 
-      return scrollmeterContainer
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  #createScrollmeterBar = () => {
-    const scrollmeterBar = document.createElement('div')
-    scrollmeterBar.classList.add(styles.scrollmeter_bar)
-
-    this.#scrollmeterBar = scrollmeterBar
-
-    return scrollmeterBar
-  }
-
-  #findHighestZIndex = (element: HTMLElement) => {
-    let highest = 0
-
-    const zIndex = window.getComputedStyle(element).zIndex
-
-    if (zIndex !== 'auto') {
-      highest = Math.max(highest, parseInt(zIndex))
+                this.#timelineElements = timeline.createTimeline(this.#containerHeight, this.#highestZIndex)
+            }
+        })
     }
 
-    Array.from(element.children).forEach((child) => {
-      highest = Math.max(highest, this.#findHighestZIndex(child as HTMLElement))
-    })
+    #createScrollmeterContainer = () => {
+        try {
+            if (!this.#targetContainer) throw new Error('targetContainer is not found')
 
-    return highest + 1
-  }
+            const scrollmeterContainer = document.createElement('div') as HTMLDivElement
+            scrollmeterContainer.classList.add(styles.scrollmeter_container)
 
-  #updateBarWidth = () => {
-    if (!this.#targetContainer) return
+            const highestZIndex = this.#findHighestZIndex(this.#targetContainer)
+            this.#highestZIndex = highestZIndex
+            scrollmeterContainer.style.zIndex = highestZIndex.toString()
 
-    const currentScroll = window.scrollY - this.#elementTop
-    const scrollPercentage = (currentScroll / this.#totalHeight) * 100
+            const scrollmeterBar = this.#createScrollmeterBar()
+            scrollmeterContainer.appendChild(scrollmeterBar)
 
-    this.#barWidth = Math.min(100, Math.max(0, scrollPercentage))
+            this.#scrollmeterContainer = scrollmeterContainer
 
-    if (this.#scrollmeterBar) {
-      this.#scrollmeterBar.style.width = `${this.#barWidth}%`
+            this.setCSSCustomProperties()
+
+            return scrollmeterContainer
+        } catch (error) {
+            console.error(error)
+        }
     }
-  }
 
-  #captureContainer = async () => {
-    if (!this.#targetContainer) return
+    #createScrollmeterBar = () => {
+        const scrollmeterBar = document.createElement('div')
+        scrollmeterBar.classList.add(styles.scrollmeter_bar)
 
-    try {
-      const canvas = await html2canvas(this.#targetContainer, {
-        ignoreElements: (element) => {
-          const ignoreClasses = [styles.scrollmeter_container]
-          return ignoreClasses.some((className) =>
-            element.classList.contains(className),
-          )
-        },
-      })
+        this.#scrollmeterBar = scrollmeterBar
 
-      this.#captureCanvas = canvas
-    } catch (error) {
-      console.error('미리보기를 생성하는 중 오류가 발생했습니다:', error)
+        return scrollmeterBar
     }
-  }
 
-  protected setCSSCustomProperties = () => {
-    if (!this.#scrollmeterContainer) return
-    // css custom
-    if (this.#defaultOptions.barOptions) {
-      const { color, background, height } = this.#defaultOptions.barOptions
-      if (color) {
-        this.#scrollmeterContainer.style.setProperty(
-          '--scrollmeter-bar-color',
-          color,
-        )
-      }
-      if (background) {
-        this.#scrollmeterContainer.style.setProperty(
-          '--scrollmeter-bar-background',
-          background,
-        )
-      }
-      if (height) {
-        this.#scrollmeterContainer.style.setProperty(
-          '--scrollmeter-bar-height',
-          `${height}px`,
-        )
-      }
+    #findHighestZIndex = (element: HTMLElement) => {
+        let highest = 0
+
+        const zIndex = window.getComputedStyle(element).zIndex
+
+        if (zIndex !== 'auto') {
+            highest = Math.max(highest, parseInt(zIndex))
+        }
+
+        Array.from(element.children).forEach((child) => {
+            highest = Math.max(highest, this.#findHighestZIndex(child as HTMLElement))
+        })
+
+        return highest + 1
     }
-  }
 
-  public createScrollmeter = () => {
-    try {
-      if (!this.#targetContainer)
-        throw new Error('targetContainer is not found')
+    #updateBarWidth = () => {
+        if (!this.#targetContainer) return
 
-      const existingScrollmeter = document.querySelectorAll(
-        `.${styles.scrollmeter_container}`,
-      )
+        const currentScroll = window.scrollY - this.#elementTop
+        const scrollPercentage = (currentScroll / this.#totalHeight) * 100
 
-      if (existingScrollmeter.length > 0) {
-        return null
-      }
+        this.#barWidth = Math.min(100, Math.max(0, scrollPercentage))
 
-      if (!this.#resizeObserver) {
-        throw new Error('resizeObserver is not found')
-      }
-
-      const container = this.#createScrollmeterContainer()
-
-      if (!container) throw new Error('scrollmetercontainer is not found')
-
-      this.#targetContainer.appendChild(container)
-
-      this.#resizeObserver.observe(this.#targetContainer)
-
-      window.addEventListener('scroll', this.#updateBarWidth)
-    } catch (error) {
-      console.error(error)
+        if (this.#scrollmeterBar) {
+            this.#scrollmeterBar.style.width = `${this.#barWidth}%`
+        }
     }
-  }
 
-  public getTargetContainer = () => {
-    return this.#targetContainer
-  }
+    #captureContainer = async () => {
+        if (!this.#targetContainer) return
 
-  public getScrollmeterContainer = () => {
-    return this.#scrollmeterContainer
-  }
+        try {
+            const canvas = await html2canvas(document.documentElement, {
+                ignoreElements: (element) => {
+                    const ignoreClasses = [styles.scrollmeter_container]
+                    return ignoreClasses.some((className) => element.classList.contains(className))
+                },
+            })
 
-  public getCaptureCanvas = () => {
-    return this.#captureCanvas || null
-  }
+            this.#captureCanvas = canvas
+        } catch (error) {
+            console.error('미리보기를 생성하는 중 오류가 발생했습니다:', error)
+        }
+    }
 
-  public getDefaultOptions = () => {
-    return this.#defaultOptions
-  }
+    protected setCSSCustomProperties = () => {
+        if (!this.#scrollmeterContainer) return
+        // css custom
+        if (this.#defaultOptions.barOptions) {
+            const { color, background, height } = this.#defaultOptions.barOptions
+            if (color) {
+                this.#scrollmeterContainer.style.setProperty('--scrollmeter-bar-color', color)
+            }
+            if (background) {
+                this.#scrollmeterContainer.style.setProperty('--scrollmeter-bar-background', background)
+            }
+            if (height) {
+                this.#scrollmeterContainer.style.setProperty('--scrollmeter-bar-height', `${height}px`)
+            }
+        }
+    }
+
+    public createScrollmeter = () => {
+        try {
+            if (!this.#targetContainer) throw new Error('targetContainer is not found')
+
+            const existingScrollmeter = document.querySelectorAll(`.${styles.scrollmeter_container}`)
+
+            if (existingScrollmeter.length > 0) {
+                return null
+            }
+
+            if (!this.#resizeObserver) {
+                throw new Error('resizeObserver is not found')
+            }
+
+            const container = this.#createScrollmeterContainer()
+
+            if (!container) throw new Error('scrollmetercontainer is not found')
+
+            this.#targetContainer.appendChild(container)
+
+            this.#resizeObserver.observe(this.#targetContainer)
+
+            window.addEventListener('scroll', this.#updateBarWidth)
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
+    public getTargetContainer = () => {
+        return this.#targetContainer
+    }
+
+    public getScrollmeterContainer = () => {
+        return this.#scrollmeterContainer
+    }
+
+    public getCaptureCanvas = () => {
+        return this.#captureCanvas || null
+    }
+
+    public getDefaultOptions = () => {
+        return this.#defaultOptions
+    }
 }

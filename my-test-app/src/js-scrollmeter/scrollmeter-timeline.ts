@@ -4,123 +4,118 @@ import styles from './scrollmeter.module.scss'
 import { IScrollmeter } from './scrollmeter.types'
 
 export class ScrollmeterTimeline extends IScrollmeter {
-  #scrollmeter: Scrollmeter
+    #scrollmeter: Scrollmeter
 
-  constructor(scrollmeter: Scrollmeter) {
-    super()
-    this.#scrollmeter = scrollmeter
-  }
+    constructor(scrollmeter: Scrollmeter) {
+        super()
+        this.#scrollmeter = scrollmeter
+    }
 
-  #findTimelineElements = (element: HTMLElement): HTMLElement[] => {
-    const elArray: HTMLElement[] = []
+    #findTimelineElements = (element: HTMLElement): HTMLElement[] => {
+        const elArray: HTMLElement[] = []
 
-    const searchH1 = (el: HTMLElement) => {
-      if (el.tagName.toLowerCase() === 'h1') {
-        if (this.#isElementVisible(el)) {
-          elArray.push(el as HTMLHeadingElement)
+        const searchH1 = (el: HTMLElement) => {
+            if (el.tagName.toLowerCase() === 'h1') {
+                if (this.#isElementVisible(el)) {
+                    elArray.push(el as HTMLHeadingElement)
+                }
+            }
+
+            Array.from(el.children).forEach((child) => {
+                searchH1(child as HTMLElement)
+            })
         }
-      }
 
-      Array.from(el.children).forEach((child) => {
-        searchH1(child as HTMLElement)
-      })
+        searchH1(element)
+
+        return elArray
     }
 
-    searchH1(element)
+    #isElementVisible(element: HTMLElement): boolean {
+        // 요소 자체나 부모 요소들의 style 체크
+        const style = window.getComputedStyle(element)
+        if (style.display === 'none') return false
+        if (style.visibility === 'hidden') return false
+        if (style.opacity === '0') return false
 
-    return elArray
-  }
+        // 부모 요소들도 순차적으로 확인
+        let currentElement: HTMLElement | null = element.parentElement
+        while (currentElement) {
+            const parentStyle = window.getComputedStyle(currentElement)
+            if (parentStyle.display === 'none') return false
+            if (parentStyle.visibility === 'hidden') return false
+            if (parentStyle.opacity === '0') return false
+            currentElement = currentElement.parentElement
+        }
 
-  #isElementVisible(element: HTMLElement): boolean {
-    // 요소 자체나 부모 요소들의 style 체크
-    const style = window.getComputedStyle(element)
-    if (style.display === 'none') return false
-    if (style.visibility === 'hidden') return false
-    if (style.opacity === '0') return false
-
-    // 부모 요소들도 순차적으로 확인
-    let currentElement: HTMLElement | null = element.parentElement
-    while (currentElement) {
-      const parentStyle = window.getComputedStyle(currentElement)
-      if (parentStyle.display === 'none') return false
-      if (parentStyle.visibility === 'hidden') return false
-      if (parentStyle.opacity === '0') return false
-      currentElement = currentElement.parentElement
+        return true
     }
 
-    return true
-  }
+    public createTimeline = (contentHeight: number, highestZIndex: number): HTMLElement[] => {
+        const targetContainer = this.#scrollmeter.getTargetContainer()
+        if (!targetContainer) return []
 
-  public createTimeline = (
-    contentHeight: number,
-    highestZIndex: number,
-  ): HTMLElement[] => {
-    const targetContainer = this.#scrollmeter.getTargetContainer()
-    if (!targetContainer) return []
+        const targetElement = this.#findTimelineElements(targetContainer)
 
-    const targetElement = this.#findTimelineElements(targetContainer)
+        if (targetElement.length === 0) return []
 
-    if (targetElement.length === 0) return []
+        const timelineElements: HTMLElement[] = []
 
-    const timelineElements: HTMLElement[] = []
+        targetElement.map((element) => {
+            const scrollContainer = this.#scrollmeter.getTargetContainer()
 
-    targetElement.map((element) => {
-      const timelineElement = document.createElement('div')
-      timelineElement.classList.add(styles.scrollmeter_timeline)
+            if (!scrollContainer) return
 
-      const elementTop = element.offsetTop
-      const relativePosition =
-        (elementTop / (contentHeight - document.documentElement.clientHeight)) *
-        100
-      const width =
-        this.#scrollmeter.getDefaultOptions().timelineOptions?.width ?? 4
+            const timelineElement = document.createElement('div')
+            timelineElement.classList.add(styles.scrollmeter_timeline)
 
-      timelineElement.style.left = `${relativePosition > 100 ? `calc(100% - ${width}px)` : `${relativePosition}%`}`
-      timelineElement.style.zIndex = highestZIndex.toString()
+            const absoluteElementTop = element.getBoundingClientRect().top + window.scrollY
+            const absoluteContainerTop = scrollContainer.getBoundingClientRect().top + window.scrollY
+            const relativeTargetTop = absoluteElementTop - absoluteContainerTop
+            const relativePosition = (relativeTargetTop / contentHeight) * 100
 
-      timelineElement.addEventListener('click', () => {
-        element.scrollIntoView({ behavior: 'smooth' })
-      })
+            console.log(absoluteElementTop, absoluteContainerTop, relativeTargetTop, contentHeight)
 
-      if (this.#scrollmeter.getDefaultOptions().useTooltip) {
-        const tooltip = new ScrollmeterTooltip(this.#scrollmeter)
+            const width = this.#scrollmeter.getDefaultOptions().timelineOptions?.width ?? 4
 
-        tooltip.createTimelineTooltip(
-          timelineElement,
-          element,
-          relativePosition < 7.6
-            ? 'left'
-            : relativePosition > 92.4
-              ? 'right'
-              : 'center',
-        )
-      }
+            timelineElement.style.left = `${relativePosition > 100 ? `calc(100% - ${width}px)` : `${relativePosition}%`}`
+            timelineElement.style.zIndex = highestZIndex.toString()
 
-      this.#scrollmeter.getScrollmeterContainer()?.appendChild(timelineElement)
-      timelineElements.push(timelineElement)
-    })
+            timelineElement.addEventListener('click', () => {
+                element.scrollIntoView({ behavior: 'smooth' })
+            })
 
-    this.setCSSCustomProperties()
+            if (this.#scrollmeter.getDefaultOptions().useTooltip) {
+                const tooltip = new ScrollmeterTooltip(this.#scrollmeter)
 
-    return timelineElements
-  }
+                tooltip.createTimelineTooltip(
+                    timelineElement,
+                    element,
+                    relativePosition < 7.6 ? 'left' : relativePosition > 92.4 ? 'right' : 'center'
+                )
+            }
 
-  protected setCSSCustomProperties() {
-    const defaultOptions = this.#scrollmeter.getDefaultOptions()
-    // css custom
-    if (defaultOptions && defaultOptions.timelineOptions) {
-      const { color, width } = defaultOptions.timelineOptions
+            this.#scrollmeter.getScrollmeterContainer()?.appendChild(timelineElement)
+            timelineElements.push(timelineElement)
+        })
 
-      if (color) {
-        this.#scrollmeter
-          .getScrollmeterContainer()
-          ?.style.setProperty('--scrollmeter-timeline-color', color)
-      }
-      if (width) {
-        this.#scrollmeter
-          .getScrollmeterContainer()
-          ?.style.setProperty('--scrollmeter-timeline-width', `${width}px`)
-      }
+        this.setCSSCustomProperties()
+
+        return timelineElements
     }
-  }
+
+    protected setCSSCustomProperties() {
+        const defaultOptions = this.#scrollmeter.getDefaultOptions()
+        // css custom
+        if (defaultOptions && defaultOptions.timelineOptions) {
+            const { color, width } = defaultOptions.timelineOptions
+
+            if (color) {
+                this.#scrollmeter.getScrollmeterContainer()?.style.setProperty('--scrollmeter-timeline-color', color)
+            }
+            if (width) {
+                this.#scrollmeter.getScrollmeterContainer()?.style.setProperty('--scrollmeter-timeline-width', `${width}px`)
+            }
+        }
+    }
 }
