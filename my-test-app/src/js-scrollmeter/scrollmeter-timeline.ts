@@ -72,9 +72,7 @@ export class ScrollmeterTimeline extends IScrollmeter {
             const absoluteElementTop = element.getBoundingClientRect().top + window.scrollY
             const absoluteContainerTop = scrollContainer.getBoundingClientRect().top + window.scrollY
             const relativeTargetTop = absoluteElementTop - absoluteContainerTop
-            const relativePosition = (relativeTargetTop / contentHeight) * 100
-
-            console.log(absoluteElementTop, absoluteContainerTop, relativeTargetTop, contentHeight)
+            const relativePosition = (relativeTargetTop / (contentHeight - document.documentElement.clientHeight)) * 100
 
             const width = this.#scrollmeter.getDefaultOptions().timelineOptions?.width ?? 4
 

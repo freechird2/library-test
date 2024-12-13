@@ -129,6 +129,14 @@ export class Scrollmeter extends IScrollmeter {
 
     #updateBarWidth = () => {
         if (!this.#targetContainer) return
+        const isVisibleScrollmeter = this.#isVisibleScrollmeter()
+
+        if (!isVisibleScrollmeter) {
+            this.#scrollmeterContainer!.style.opacity = '0'
+            return
+        }
+
+        this.#scrollmeterContainer!.style.opacity = '1'
 
         const currentScroll = window.scrollY - this.#elementTop
         const scrollPercentage = (currentScroll / this.#totalHeight) * 100
@@ -138,6 +146,12 @@ export class Scrollmeter extends IScrollmeter {
         if (this.#scrollmeterBar) {
             this.#scrollmeterBar.style.width = `${this.#barWidth}%`
         }
+    }
+
+    #isVisibleScrollmeter = () => {
+        if (!this.#targetContainer) return false
+
+        return this.#targetContainer.getBoundingClientRect().top <= 0 && this.#targetContainer.getBoundingClientRect().bottom > 0
     }
 
     #captureContainer = async () => {

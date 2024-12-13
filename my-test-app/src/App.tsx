@@ -54,8 +54,8 @@ function App() {
     return (
         <div>
             {/* <Scrollmeter> */}
-            <div style={{ backgroundColor: 'blue', height: '300px' }}></div>
             <div id='scrollmeter-container'>
+                <div style={{ backgroundColor: 'blue', height: '300px' }}></div>
                 <h1 style={{ marginBlock: '10px', backgroundColor: 'red' }}>
                     라이브러리 테스트라이브러리 테스트라이브러리 테스트라이브러리 테스트라이브러리 테스트
                 </h1>
@@ -72,8 +72,8 @@ function App() {
                     <button>버튼</button>
                 </div>
                 {/* </Scrollmeter> */}
+                <div style={{ backgroundColor: 'blue', height: '2000px' }}></div>
             </div>
-            <div style={{ backgroundColor: 'blue', height: '2000px' }}></div>
         </div>
     )
 }
